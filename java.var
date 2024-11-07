@@ -1,0 +1,11 @@
+ public class HelloWorld {
+     
+     public static void main(String[] args) {
+         int studentAge = 16;
+         double studentGpa = 4.45;
+         char studentLastInitial = 'H';
+         boolean hasPerfectAttendance = true;
+         
+         System.out.println(studentAge);
+     }
+ }
