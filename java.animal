@@ -1,0 +1,14 @@
+public class MyClass {
+    public static void main(String args[]) {
+        String animal1 = "Cat";
+        String animal2 = "Dog";  // Switched to animal12 to animal2
+        String animal3 = "Cat";
+        
+        System.out.println("Comparing animal1 to animal2 using compareTo(): "
+            + animal1.compareTo(animal2));
+        System.out.println("Comparing animal1 to animal3 using compareTo(): "
+            + animal1.compareTo(animal3));
+        System.out.println("Comparing animal1 to animal2 using compareTo(): "
+            + animal12.compareTo(animal2));  // fix
+    }
+}
