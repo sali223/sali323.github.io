@@ -1,0 +1,90 @@
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+
+# Initialize the Flask application
+app = Flask(__name__)
+
+# Setup the database URI (using SQLite for simplicity)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///supply_chain.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize the database
+db = SQLAlchemy(app)
+
+# Define the Inventory Model
+class Inventory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_name = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    
+    def __repr__(self):
+        return f"<Inventory {self.product_name}>"
+
+# Define the Order Model
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_number = db.Column(db.String(100), nullable=False, unique=True)
+    product_name = db.Column(db.String(100), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+    
+    def __repr__(self):
+        return f"<Order {self.order_number}>"
+
+# Initialize the database (create tables)
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+# Route to add an inventory item
+@app.route('/inventory', methods=['POST'])
+def add_inventory():
+    data = request.get_json()
+    new_item = Inventory(
+        product_name=data['product_name'],
+        quantity=data['quantity'],
+        price=data['price']
+    )
+    db.session.add(new_item)
+    db.session.commit()
+    return jsonify({"message": "Inventory item added successfully!"}), 201
+
+# Route to get all inventory items
+@app.route('/inventory', methods=['GET'])
+def get_inventory():
+    items = Inventory.query.all()
+    inventory_list = [{"id": item.id, "product_name": item.product_name, "quantity": item.quantity, "price": item.price} for item in items]
+    return jsonify({"inventory": inventory_list}), 200
+
+# Route to place an order
+@app.route('/order', methods=['POST'])
+def place_order():
+    data = request.get_json()
+    inventory_item = Inventory.query.filter_by(product_name=data['product_name']).first()
+    
+    if inventory_item and inventory_item.quantity >= data['quantity']:
+        total_price = data['quantity'] * inventory_item.price
+        new_order = Order(
+            order_number=data['order_number'],
+            product_name=data['product_name'],
+            quantity=data['quantity'],
+            total_price=total_price
+        )
+        inventory_item.quantity -= data['quantity']
+        db.session.add(new_order)
+        db.session.commit()
+        return jsonify({"message": "Order placed successfully!", "order_number": data['order_number']}), 201
+    else:
+        return jsonify({"message": "Insufficient stock or product not found!"}), 400
+
+# Route to get all orders
+@app.route('/orders', methods=['GET'])
+def get_orders():
+    orders = Order.query.all()
+    orders_list = [{"order_number": order.order_number, "product_name": order.product_name, "quantity": order.quantity, "total_price": order.total_price} for order in orders]
+    return jsonify({"orders": orders_list}), 200
+
+# Start the Flask application
+if __name__ == '__main__':
+    app.run(debug=True)
