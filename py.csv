@@ -1,0 +1,46 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Load data from a CSV file
+data_file = 'your_data.csv'  # Replace with your actual file path
+data = pd.read_csv(data_file)
+
+# Display the first few rows of the dataset
+print("First 5 rows of the dataset:")
+print(data.head())
+
+# Display basic summary statistics for numerical columns
+print("\nSummary Statistics:")
+print(data.describe())
+
+# Check for any missing values in the dataset
+print("\nMissing values in each column:")
+print(data.isnull().sum())
+
+# Display the data types of each column
+print("\nData types of each column:")
+print(data.dtypes)
+
+# Correlation analysis (if applicable)
+if data.select_dtypes(include=['number']).shape[1] > 1:
+    correlation_matrix = data.corr()
+    print("\nCorrelation matrix:")
+    print(correlation_matrix)
+    
+    # Visualize the correlation matrix with a heatmap
+    plt.figure(figsize=(8, 6))
+    plt.title("Correlation Matrix")
+    plt.imshow(correlation_matrix, cmap='coolwarm', interpolation='none')
+    plt.colorbar()
+    plt.xticks(range(len(correlation_matrix.columns)), correlation_matrix.columns, rotation=90)
+    plt.yticks(range(len(correlation_matrix.columns)), correlation_matrix.columns)
+    plt.show()
+
+# Optional: If you have categorical data, you can also count the occurrences of each category
+print("\nValue counts for each categorical column:")
+categorical_columns = data.select_dtypes(include=['object']).columns
+for col in categorical_columns:
+    print(f"\n{col} value counts:")
+    print(data[col].value_counts())
+
+# Op
